@@ -20,6 +20,6 @@ public class SttSentence {
     private List<KeyWord> keywords;  //分词列表
     private  int emotion; // 情绪  高兴、生气、普通
     private double speed;  //语速  字/秒
-    private  int energy;    //音量
-    private Date inputTime;  //入库时间
+    private double energy;    //音量
+    private String inputTime;  //入库时间
 }

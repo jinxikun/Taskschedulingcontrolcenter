@@ -1,6 +1,7 @@
 package com.telecom.ccs.utils.file;
 
 import com.alibaba.fastjson.JSON;
+import com.telecom.ccs.entities.*;
 import com.telecom.ccs.entities.xml.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -8,17 +9,71 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Dom4jUtil {
 
-    public static void main(String[] args) {
+    public  SttInfo  parseSttInfo(String xmlPath) {
 
         System.out.println("progress start ...");
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        String mydate = sdf.format(date);
+
+        SttInfo sttInfo = new SttInfo();
+        List<SttSentence> sttSentences = new ArrayList<SttSentence>();
+        List<Silence> silences =new ArrayList<Silence> ();
+        List<Interrupt> interrupted = new ArrayList<Interrupt>();
+
         Instance instance  = parseXml("D:/learning/test.wav.xml");
+
+
+        List<Channel_search> channel_searchList=  instance.getSubject_search().getChannel_searchList();
+
+        for(Channel_search  everyChanel: channel_searchList ){
+
+
+            if(everyChanel.getFunction_long_silence()!=null){      //解析静音区
+               if(everyChanel.getFunction_long_silence().getItems()!=null){
+                   Items_search items_search =  everyChanel.getFunction_long_silence().getItems();
+                   if(!items_search.getCount().equals("0")){
+                       List<Item_search> item_searches= items_search.getItems();
+                       for(Item_search item_search: item_searches){
+                           Silence silence = new Silence();
+                           silence.setStart(Double.parseDouble(item_search.getStart()));
+                           silence.setEnd(Double.parseDouble(item_search.getEnd()));
+                           silence.setInputTime(mydate);
+                           silences.add(silence);
+                       }
+                   }
+               }
+            }else if(everyChanel.getFunction_interrupted()!=null){     //解析叠音区
+
+                if(everyChanel.getFunction_interrupted().getItems()!=null){
+                    Items_search items_search = everyChanel.getFunction_interrupted().getItems();
+                    if(!items_search.getCount().equals("0")){
+                        List<Item_search> item_searches= items_search.getItems();
+                        for(Item_search item_search: item_searches){
+                            Interrupt interrupt = new Interrupt();
+                            interrupt.setStart(Double.parseDouble(item_search.getStart()));
+                            interrupt.setEnd(Double.parseDouble(item_search.getEnd()));
+                            interrupt.setInputTime(mydate);
+                            interrupted.add(interrupt);
+
+                        }
+                    }
+                }
+
+            }
+        }
+
+
+
+
+
+        //
+
         List<Channel> channelList = instance.getSubject_speaker_separation().getChannelList();
 
         List<Item> itemList_n0 = null;
@@ -215,10 +270,6 @@ public class Dom4jUtil {
         System.out.println("n1_time_splits length: "+n1_time_splits.length);
 
 
-
-
-
-
         for(Sentence sentence1 : sentencesList_n0){
             System.out.println(sentence1.toString());
         }
@@ -242,8 +293,60 @@ public class Dom4jUtil {
         }
 
 
+      for(Sentence xmlSentence : sentencesList_n0){
+            SttSentence sttSentence = new SttSentence();
+            if(xmlSentence.getRole().equals("n0")){
+                sttSentence.setChannel(0);
+            }else{
+                sttSentence.setChannel(1);
+            }
 
+            sttSentence.setStart(Double.parseDouble(xmlSentence.getStart()));
+            sttSentence.setEnd(Double.parseDouble(xmlSentence.getEnd()));
+            sttSentence.setCentent(xmlSentence.getText());
+            if(xmlSentence.getEmotion_type().equals("负面情绪")){
+                sttSentence.setEmotion(0);
+            }
+
+            sttSentence.setSpeed(Double.parseDouble(xmlSentence.getSpeed()));
+            sttSentence.setEnergy(Double.parseDouble(xmlSentence.getEnergy()));
+            sttSentence.setInputTime(mydate);
+
+           List<String> keywordlist = xmlSentence.getKeywordsList();
+           List<String> keywordlisttime =  xmlSentence.getKeywordsListTime();
+
+           List<KeyWord> KeyWordlist = new ArrayList<KeyWord>();
+           if(keywordlist.size()==keywordlisttime.size()){
+
+               for(int i = 0 ;i<keywordlist.size();i++){
+                   KeyWord keyWord = new KeyWord();
+                   keyWord.setKeyword(keywordlist.get(i));
+                   String[] times = keywordlisttime.get(i).split(",");
+                   keyWord.setKeywordStart(Long.parseLong(times[0]));
+                   keyWord.setKeywordEnd(Long.parseLong(times[1]));
+                   KeyWordlist.add(keyWord);
+               }
+
+           }else{
+               System.out.println("关键词解析出错。");
+           }
+
+           sttSentence.setKeywords(KeyWordlist);
+
+
+          sttSentences.add(sttSentence);
+      }
+
+        sttInfo.setSttSentences(sttSentences);
+        sttInfo.setSilences(silences);
+        sttInfo.setInterrupted(interrupted);
+
+
+        return  sttInfo;
     }
+
+
+
 
 
     public static TextAndTime getTextAndTime(Subject_search subject_search){
@@ -314,6 +417,7 @@ public class Dom4jUtil {
             instance.setDuration(instance_ele.attributeValue("duration"));
             instance.setFile_comment(instance_ele.attributeValue("file_comment"));
         }
+
         System.out.println("instance: "+instance.toString());
 
 
@@ -380,8 +484,12 @@ public class Dom4jUtil {
                                   Function_long_silence function_long_silence = new Function_long_silence();
                                   Items_search items_search = new Items_search();
                                   Element items_element = function_element.element("items");
+
+                                  items_search.setCount(items_element.attributeValue("count"));
+                                  items_search.setDuration(items_element.attributeValue("duration"));
                                   List<Item_search> item_search_list = new ArrayList<Item_search>();
                                   List<Element>  items_list = items_element.elements();
+
                                   for(Element element1:items_list){
                                       Item_search item = new Item_search();
                                       item.setStart(element1.attributeValue("start"));

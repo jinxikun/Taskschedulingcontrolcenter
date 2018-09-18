@@ -13,5 +13,5 @@ public class Silence {
 
     private double start;
     private  double end;
-    private Date inputTime;
+    private String inputTime;
 }

@@ -15,7 +15,7 @@ public class SttInfo {
     private  List<SttSentence> sttSentences;   // 文本识别
     private  List<Silence> silences;   // 静音
     private  List<Interrupt> interrupted;  //叠音
-    private  Date sttStartTime;
-    private  Date sttEndTime;
+    private  String sttStartTime;
+    private  String sttEndTime;
 
 }

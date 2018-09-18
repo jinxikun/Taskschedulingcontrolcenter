@@ -8,12 +8,17 @@ import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.Requests;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -548,5 +553,40 @@ public class ElasticSearchOps {
 
 
 
+    public static String searchDate(String index, String type, String serialNumber) {
 
+        String result = "";
+        SearchResponse  response = client.prepareSearch(index)
+                .setTypes(type)
+                .setQuery(QueryBuilders.termQuery("_id",serialNumber))
+                .get();
+
+        logger.info("search date: "+response.status().getStatus());
+        SearchHits searchHits = response.getHits();
+        logger.info("xml serialNumber："+serialNumber+" 对应elasticsearch 查询结果条数："+ searchHits.totalHits);
+        if(searchHits.totalHits!=1){
+            return "";
+        }
+        for(SearchHit searchHit : searchHits){
+             result = searchHit.getSourceAsString();
+        }
+
+        logger.info("search date: "+result);
+        return result;
+    }
+
+    public static String getDate(String index, String type, String serialNumber) {
+
+
+        GetResponse response = client.prepareGet()
+                .setIndex(index)
+                .setType(type)
+                .setId(serialNumber)
+                .get();
+
+
+        logger.info("get date: "+response.getSourceAsString());
+
+        return response.getSourceAsString();
+    }
 }
