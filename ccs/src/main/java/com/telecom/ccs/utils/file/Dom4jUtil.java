@@ -26,7 +26,7 @@ public class Dom4jUtil {
         List<Silence> silences =new ArrayList<Silence> ();
         List<Interrupt> interrupted = new ArrayList<Interrupt>();
 
-        Instance instance  = parseXml("D:/learning/test.wav.xml");
+        Instance instance  = parseXml(xmlPath);
 
 
         List<Channel_search> channel_searchList=  instance.getSubject_search().getChannel_searchList();
@@ -304,10 +304,13 @@ public class Dom4jUtil {
             sttSentence.setStart(Double.parseDouble(xmlSentence.getStart()));
             sttSentence.setEnd(Double.parseDouble(xmlSentence.getEnd()));
             sttSentence.setCentent(xmlSentence.getText());
-            if(xmlSentence.getEmotion_type().equals("负面情绪")){
-                sttSentence.setEmotion(0);
-            }
 
+
+            if(xmlSentence.getEmotion_type()!=null) {
+                if (xmlSentence.getEmotion_type().equals("负面情绪")) {
+                    sttSentence.setEmotion(0);
+                }
+            }
             sttSentence.setSpeed(Double.parseDouble(xmlSentence.getSpeed()));
             sttSentence.setEnergy(Double.parseDouble(xmlSentence.getEnergy()));
             sttSentence.setInputTime(mydate);

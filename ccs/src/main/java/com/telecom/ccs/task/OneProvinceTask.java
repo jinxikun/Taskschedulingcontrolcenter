@@ -1,6 +1,8 @@
 package com.telecom.ccs.task;
 
 import com.alibaba.fastjson.JSON;
+import com.telecom.ccs.config.PropertiesConfig;
+import com.telecom.ccs.config.SpringApplicationContextUtil;
 import com.telecom.ccs.entities.*;
 import com.telecom.ccs.utils.elasticsearch.ElasticSearchOps;
 import com.telecom.ccs.utils.file.TaskDto;
@@ -8,20 +10,19 @@ import com.telecom.ccs.utils.redis.RedisOps;
 import com.telecom.ccs.utils.task.ProvinceScanPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class OneProvinceTask  implements  Runnable{
 
     private Logger logger  = LoggerFactory.getLogger(OneProvinceTask.class);
 
+
+    private PropertiesConfig propertiesConfig = SpringApplicationContextUtil.getBean("propertiesConfig",PropertiesConfig.class);
 
     private String province;
     public  OneProvinceTask(String province){
@@ -30,49 +31,64 @@ public class OneProvinceTask  implements  Runnable{
     @Override
     public void run() {
 
-        logger.info("task province:"+province+" is started ...");
-
-        ProvinceScanPath provinceScanPath = new ProvinceScanPath(province);
-        String scanPath =  provinceScanPath.getCurrentScanPath("/task");
-        ArrayList<TaskDto> list = new ScanVoicetask().run("192.168.5.177",21,"ftpuser","root",scanPath);
-        for(TaskDto taskDto: list){
-
-            VoiceInfo vi = tool(taskDto);
+        try {
 
 
-            CCS ccs = new CCS();
-            ccs.setSerialNumber(taskDto.getRecordedInfo()[0]);
-            ccs.setAudioPath(taskDto.getVoicePath());
-            ccs.setVoiceInfo(vi);
-            SttInfo sttInfo = new SttInfo();
-            List<BusinessTag> businessTags = new ArrayList<BusinessTag>();
-            List<RuleInfo> ruleInfos = new ArrayList<RuleInfo>();
-            List<WorkScore> workScores = new ArrayList<WorkScore>();
-            List<KeyWordsClustering>  wordFrequency = new ArrayList<KeyWordsClustering>();
-            List<TestInfo> testInfos = new ArrayList<TestInfo>();
+            logger.info("task province:" + province + " is started ...");
 
-            ccs.setSttInfo(sttInfo);
-            ccs.setBusinessTags(businessTags);
-            ccs.setRuleInfos(ruleInfos);
-            ccs.setWorkScores(workScores);
-            ccs.setWordFrequency(wordFrequency);
-            ccs.setTestInfos(testInfos);
+            ProvinceScanPath provinceScanPath = new ProvinceScanPath(province);
+            String scanPath = provinceScanPath.getCurrentScanPath(propertiesConfig.getSystem_ftp_relativePath());
+            logger.info("Warning: province scan dir: " + scanPath);
 
-            logger.info("创建任务到缓存队列。。。"+JSON.toJSONString(vi));
 
-            try {
-                ElasticSearchOps.insertJsonData("shandong","task",taskDto.getRecordedInfo()[0],JSON.toJSONString(ccs));
-            } catch (IOException e) {
-                e.printStackTrace();
+            ArrayList<TaskDto> list = new ScanVoicetask().run(propertiesConfig.getSystem_ftp_server(), Integer.parseInt(propertiesConfig.getSystem_ftp_port()), propertiesConfig.getSystem_ftp_username(), propertiesConfig.getSystem_ftp_password(), scanPath);
+            if (list == null) {
+                logger.warn("Warning: Province:" + province + " no task to do !");
+                return;
             }
 
-            logger.info("task: "+taskDto.getVoicePath());
-            RedisOps.leftPush(province+"_voice_queue", JSON.toJSONString(taskDto));
+            for (TaskDto taskDto : list) {
 
-            logger.info("end: "+taskDto.getVoicePath());
+                VoiceInfo vi = tool(taskDto);
 
+
+                CCS ccs = new CCS();
+                ccs.setSerialNumber(taskDto.getRecordedInfo()[0]);
+                ccs.setAudioPath(taskDto.getVoicePath());
+                ccs.setVoiceInfo(vi);
+                SttInfo sttInfo = new SttInfo();
+                List<BusinessTag> businessTags = new ArrayList<BusinessTag>();
+                List<RuleInfo> ruleInfos = new ArrayList<RuleInfo>();
+                List<WorkScore> workScores = new ArrayList<WorkScore>();
+                List<KeyWordsClustering> wordFrequency = new ArrayList<KeyWordsClustering>();
+                List<TestInfo> testInfos = new ArrayList<TestInfo>();
+
+                ccs.setSttInfo(sttInfo);
+                ccs.setBusinessTags(businessTags);
+                ccs.setRuleInfos(ruleInfos);
+                ccs.setWorkScores(workScores);
+                ccs.setWordFrequency(wordFrequency);
+                ccs.setTestInfos(testInfos);
+
+                logger.info("创建任务到缓存队列。。。" + JSON.toJSONString(vi));
+
+                try {
+                    ElasticSearchOps.insertJsonData(province, "task", taskDto.getRecordedInfo()[0], JSON.toJSONString(ccs));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                RedisOps.leftPush(province + "_voice_queue", JSON.toJSONString(taskDto));
+
+                logger.info("redis queue:" + province + " leftpush ,json: " + JSON.toJSONString(taskDto));
+
+            }
+
+
+        }catch (Exception e){
+            logger.error("CCS Error: system exception, please check your program.");
+            e.printStackTrace();
         }
-
 
     }
 

@@ -29,11 +29,11 @@ public class XmlParseController {
         // to do 解析 xml  ， 更新 elasticsearch , 发送任务给质检引擎
 
         Dom4jUtil  dom = new Dom4jUtil();
-        SttInfo sttInfo =  dom.parseSttInfo("");
+        SttInfo sttInfo =  dom.parseSttInfo(info.getXmlPath());
 
         logger.info("sttInfo: "+sttInfo.toString());
 
-        String result =  ElasticSearchOps.searchDate("shandong","task","123432011");
+        String result =  ElasticSearchOps.searchDate("shandong","task",info.getEngineNo());
 
         CCS ccs = null;
         if(result!=null && !"".equals(result)){

@@ -47,11 +47,6 @@ public class Consumer_Voice_queue implements Runnable {
     }
 
 
-
-
-
-
-
     public TaskDto getTaskFormVoiceQueue(String queueName){
 
             TaskDto dto = null;

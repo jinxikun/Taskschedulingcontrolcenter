@@ -6,10 +6,10 @@ server:
 
 system:
     ftp:
-      relativePath: /task
+      relativePath: /home/ftpuser/task
       username: ftpuser
-      password: root
-      server: 192.168.5.177
+      password: 12345678
+      server: 172.16.153.149
       port: 21
 
     dispatch:
@@ -19,16 +19,16 @@ system:
 
 mybatis:
   config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径
-  type-aliases-package: com.telecom.ccs.model    # 所有Entity别名类所在包
-  mapper-locations: classpath:mybatis/mapper/*.xml                       # mapper映射文件
+  type-aliases-package: com.telecom.ccs.entities    # 所有Entity别名类所在包
+  mapper-locations:
+  - classpath:mybatis/mapper/**/*.xml                       # mapper映射文件
 
 spring:
    datasource:
-        type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.14.215:3306/thinkit
+        url: jdbc:mysql://172.16.153.149:3306/dx_ngquality
         username: root
-        password: 123456
+        password: dxQuality@thinkit123
         dbcp2:
              min-idle: 5                                           # 数据库连接池的最小维持连接数
              initial-size: 5                                       # 初始化连接数
@@ -39,19 +39,19 @@ spring:
 # Elasticsearch
 # 9200端口是用来让HTTP REST API来访问ElasticSearch，而9300端口是传输层监听的默认端口
 elasticsearch:
-        ip: 192.168.11.173
+        ip: 172.16.153.149
         port: 9300
         pool: 5
         cluster:
-              name: myapp-elasticsearch64on173
+              name: elasticsearch
 
 
 
 spring:
       redis:
-        host: 192.168.11.173
+        host: 172.16.153.149
         port: 6379
-        database: 5
+        database: 0
         jedis:
           pool:
               max-active: 8

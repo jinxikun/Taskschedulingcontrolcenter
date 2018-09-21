@@ -46,22 +46,34 @@ public class ScanVoicetask {
 
     public  ArrayList<TaskDto> run(String hostname,int port,String username,String password,String scanPath) {
 
+        logger.info("scanDir: "+scanPath);
+       /* scanPath = null;
+       if(scanPath.endsWith("a")){
+            logger.error("scanDir: "+scanPath);
+        }*/
+
         try {
             boolean flag = login(hostname,port,username,password);
             logger.info("ftp login flag: "+flag);
+
+            // to do  ftp 异常（登陆异常）
+            if(flag==false)
+            return null;
         } catch (IOException e) {
             logger.error("ftp login failed. "+ e.getMessage());
         }
 
         try {
             logger.info("开始扫描"+scanPath+"下的任务 ..");
-            scanDir(scanPath);
+             scanDir(scanPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         System.out.println("all voice size: "+allVoiceFiles.size());
         System.out.println("all txt size: "+allTxtFiles.size());
+
+
 
         for(VoiceDto voiceDto: allVoiceFiles){
             System.out.println("voice file: "+voiceDto.getPath() +"        size:"+voiceDto.getSize());
@@ -79,9 +91,18 @@ public class ScanVoicetask {
 
 
         /*本批次如若有异常，则写异常文件到ftp*/
-        writeTxt2ftp("/home/zhangbo","onlyVoice.txt",onlyVoice.toString());
-        writeTxt2ftp("/home/zhangbo","onlyTxt.txt",onlyTxt.toString());
-        writeTxt2ftp("/home/zhangbo","exceptions.txt",exceptions.toString());
+        if(!"".equals(onlyVoice.toString())){
+            writeTxt2ftp("/home/zhangbo","onlyVoice.txt",onlyVoice.toString());
+        }
+
+        if(!"".equals(onlyTxt.toString())){
+            writeTxt2ftp("/home/zhangbo","onlyTxt.txt",onlyTxt.toString());
+        }
+
+        if(!"".equals(exceptions.toString())){
+            writeTxt2ftp("/home/zhangbo","exceptions.txt",exceptions.toString());
+        }
+
 
         close(ftp);
 
@@ -105,28 +126,43 @@ public class ScanVoicetask {
 
         ftp.setConnectTimeout(10*1000); // 设置10s 连接不上就包超时异常
         ftp.connect(hostname,port);
-        if(ftp.isConnected()){
-            if(ftp.login(username,password)){
-                logger.info("login ftp server success ...");
-                return true;
-            }else {
-                logger.error("login ftp server failed ...");
 
-            }
+        int replyCode = ftp.getReplyCode();
+        if(!FTPReply.isPositiveCompletion(replyCode)){
+            logger.error("Connect FTP failed");
+            return false;
         }
 
-        return false;
+        boolean success = ftp.login(username,password);
+
+            if(success){
+                logger.info("Login ftp server success");
+                return true;
+            }else {
+                logger.error("Login ftp server failed");
+                return false;
+
+            }
+
     }
 
     /* 扫描任务*/
     public  void scanDir(String pathName) throws IOException{
 
-        if(pathName.startsWith("/") ){
+        if(pathName.startsWith("/") && pathName.endsWith("/") ){
 
             // add to do 目录是否存在
 
             String directory = pathName;
-            ftp.changeWorkingDirectory(directory);
+            boolean isChanged = ftp.changeWorkingDirectory(directory);
+
+            if(isChanged){
+                logger.info("Successfully changed working directory. "+ directory);
+            }else{
+                logger.error("Failed to change working directory. See server's reply.");
+                logger.error("FTP server's reply: " + ftp.getReplyCode());
+                return;
+            }
 
 
             FTPFile[] files = ftp.listFiles();
@@ -276,4 +312,7 @@ Transfer complete,但是ftp server 只要在接受到inputstream 执行close方�
             e.printStackTrace();
         }
     }
+
+
+
 }
