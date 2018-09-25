@@ -2,17 +2,27 @@ package com.telecom.ccs.task.consumer;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.telecom.ccs.config.PropertiesConfig;
+import com.telecom.ccs.config.SpringApplicationContextUtil;
 import com.telecom.ccs.utils.file.TaskDto;
+import com.telecom.ccs.utils.file.VoiceTask;
 import com.telecom.ccs.utils.http.HttpOps;
+import com.telecom.ccs.utils.http.ResponseInfo;
 import com.telecom.ccs.utils.redis.RedisOps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+
+import static com.telecom.ccs.utils.http.HttpOps.post;
 
 public class Consumer_Voice_queue implements Runnable {
 
     private Logger logger = LoggerFactory.getLogger(Consumer_Voice_queue.class);
 
     private  String queueName;
+
+    private PropertiesConfig propertiesConfig = SpringApplicationContextUtil.getBean("propertiesConfig",PropertiesConfig.class);
 
     public Consumer_Voice_queue(String queueName){
         this.queueName = queueName;
@@ -27,14 +37,22 @@ public class Consumer_Voice_queue implements Runnable {
             if(dto!=null){
                 // to do
 
+                VoiceTask voiceTask = new VoiceTask();
+                voiceTask.setSerialNumber(dto.getRecordedInfo()[0]);
+                voiceTask.setWavFilePath(dto.getVoicePath());
 
-                String text = "天气 不错";
-                String url = "http://192.168.14.203:80/tts.php?text="+text+"";
+                File file = new File(dto.getVoicePath());
 
-                logger.error("Thread_name: "+Thread.currentThread().getName());
+                if(file.getParent().endsWith("wav")){
+                    voiceTask.setToFilePath(file.getParent().substring(0,file.getParent().length()-3)+"stt/"+file.getName()+".xml");
+                }else{
+                    voiceTask.setToFilePath(file.getPath()+".xml");
+                }
 
-                byte[] buff =  HttpOps.get(url);
-                logger.info("语音合成返回：测试http 调用 ");
+
+
+                ResponseInfo responseInfo =   HttpOps.post(propertiesConfig.getSystem_voice_engine_url(),JSON.toJSONString(voiceTask));
+                logger.info("语音任务发送： "+voiceTask.toString()+" http post 调用结果： "+responseInfo.toString());
 
             }else{
                 try {

@@ -31,6 +31,7 @@ public class ModelRuleController {
    @RequestMapping(value = "/service/rulemodel",method = RequestMethod.GET)
     public Test   select(){
 
+       logger.info("come in ..");
        Test test = service.selectRulesByProvince("校长");
 
        return  test;

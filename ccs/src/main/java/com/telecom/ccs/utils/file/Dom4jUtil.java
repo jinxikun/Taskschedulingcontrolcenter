@@ -1,20 +1,57 @@
 package com.telecom.ccs.utils.file;
 
 import com.alibaba.fastjson.JSON;
+import com.telecom.ccs.config.PropertiesConfig;
+import com.telecom.ccs.config.SpringApplicationContextUtil;
 import com.telecom.ccs.entities.*;
 import com.telecom.ccs.entities.xml.*;
+import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPReply;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+
 public class Dom4jUtil {
 
+    private Logger logger = LoggerFactory.getLogger(Dom4jUtil.class);
+
+    private  FTPClient ftp ;
+    private PropertiesConfig propertiesConfig;
+
+    public Dom4jUtil(){
+        ftp =  new FTPClient();
+        propertiesConfig = SpringApplicationContextUtil.getBean("propertiesConfig",PropertiesConfig.class);
+    }
+
+
+
     public  SttInfo  parseSttInfo(String xmlPath) {
+
+
+        //首先创建ftp连接，读取指定目录xml文件
+        try {
+            boolean flag = login(propertiesConfig.getSystem_ftp_server(),propertiesConfig.getSystem_ftp_port(),propertiesConfig.getSystem_ftp_username(),propertiesConfig.getSystem_ftp_password());
+            logger.info("functon(xmlparse) ： ftp login flag: "+flag);
+
+            // to do  ftp 异常（登陆异常）
+            if(flag==false)
+                return null;
+        } catch (IOException e) {
+            logger.error("functon(xmlparse) ： ftp login failed. "+ e.getMessage());
+        }
+
 
         System.out.println("progress start ...");
         Date date = new Date();
@@ -345,6 +382,7 @@ public class Dom4jUtil {
         sttInfo.setInterrupted(interrupted);
 
 
+        close(ftp);
         return  sttInfo;
     }
 
@@ -388,7 +426,8 @@ public class Dom4jUtil {
 
 
 
-    public static Instance parseXml(String xmlpath){
+    public  Instance parseXml(String xmlpath){
+
 
         Instance instance = null;
         Subject_speaker_separation subject_speaker_separation = null;
@@ -396,13 +435,15 @@ public class Dom4jUtil {
         List<Channel> channelList = null;
 
 
-        String filepath = xmlpath;
-        File file  = new File(filepath);
+        //String filepath = xmlpath;
+       // File file  = new File(filepath);
         Document document = null;
         SAXReader reader = new SAXReader();
         try {
-             document = reader.read(file);
-        } catch (DocumentException e) {
+           //  document = reader.read(file);
+             document =  reader.read(ftp.retrieveFileStream(xmlpath));
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -598,4 +639,43 @@ public class Dom4jUtil {
 
 
     }
+
+
+    /* 关闭ftp 连接 */
+    public  void close(FTPClient client){
+        if(client.isConnected()){
+            try {
+                client.disconnect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /* 登陆 */
+    public   boolean login(String hostname,int port ,String username,String password) throws  IOException{
+
+        ftp.setConnectTimeout(10*1000); // 设置10s 连接不上就包超时异常
+        ftp.connect(hostname,port);
+
+        int replyCode = ftp.getReplyCode();
+        if(!FTPReply.isPositiveCompletion(replyCode)){
+            logger.error("Connect FTP failed");
+            return false;
+        }
+
+        boolean success = ftp.login(username,password);
+
+        if(success){
+            logger.info("Login ftp server success");
+            return true;
+        }else {
+            logger.error("Login ftp server failed");
+            return false;
+
+        }
+
+    }
+
+
 }

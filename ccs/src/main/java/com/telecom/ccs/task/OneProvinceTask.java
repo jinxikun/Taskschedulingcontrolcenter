@@ -41,7 +41,7 @@ public class OneProvinceTask  implements  Runnable{
             logger.info("Warning: province scan dir: " + scanPath);
 
 
-            ArrayList<TaskDto> list = new ScanVoicetask().run(propertiesConfig.getSystem_ftp_server(), Integer.parseInt(propertiesConfig.getSystem_ftp_port()), propertiesConfig.getSystem_ftp_username(), propertiesConfig.getSystem_ftp_password(), scanPath);
+            ArrayList<TaskDto> list = new ScanVoicetask().run(propertiesConfig.getSystem_ftp_server(), propertiesConfig.getSystem_ftp_port(), propertiesConfig.getSystem_ftp_username(), propertiesConfig.getSystem_ftp_password(), scanPath);
             if (list == null) {
                 logger.warn("Warning: Province:" + province + " no task to do !");
                 return;
@@ -73,7 +73,7 @@ public class OneProvinceTask  implements  Runnable{
                 logger.info("创建任务到缓存队列。。。" + JSON.toJSONString(vi));
 
                 try {
-                    ElasticSearchOps.insertJsonData(province, "task", taskDto.getRecordedInfo()[0], JSON.toJSONString(ccs));
+                    ElasticSearchOps.insertJsonData(province.toLowerCase(), "task", taskDto.getRecordedInfo()[0], JSON.toJSONString(ccs));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

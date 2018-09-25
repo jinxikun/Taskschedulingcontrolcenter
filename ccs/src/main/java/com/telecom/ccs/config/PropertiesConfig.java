@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("propertiesConfig")
 @Data
 public class PropertiesConfig {
 
@@ -12,7 +12,7 @@ public class PropertiesConfig {
     private String system_ftp_server;
 
     @Value("${system.ftp.port}")
-    private String system_ftp_port;
+    private int system_ftp_port;
 
     @Value("${system.ftp.relativePath}")
     private String system_ftp_relativePath;
@@ -32,8 +32,21 @@ public class PropertiesConfig {
     @Value("${system.dispatch.hebei}")
     private boolean system_dispatch_hebei;
 
+    @Value("${system.datasource.driver-class-name}")
+    private String system_datasource_driver_class_name;
+
+    @Value("${system.datasource.url}")
+    private String system_datasource_url;
+
+    @Value("${system.datasource.username}")
+    private String system_datasource_username;
+
+    @Value("${system.datasource.password}")
+    private String system_datasource_password;
 
 
+    @Value("${system.voice_engine_url}")
+    private String system_voice_engine_url;
 
 
 

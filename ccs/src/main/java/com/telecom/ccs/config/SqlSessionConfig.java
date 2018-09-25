@@ -31,10 +31,10 @@ public class SqlSessionConfig {
         //test 自定义变量可以拿到
 
         DruidDataSource dataSource = new DruidDataSource();
-        dataSource.setUrl("jdbc:mysql://192.168.14.215:3306/thinkit");
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUsername("root");
-        dataSource.setPassword("123456");
+        dataSource.setUrl(properties.getSystem_datasource_url());
+        dataSource.setDriverClassName(properties.getSystem_datasource_driver_class_name());
+        dataSource.setUsername(properties.getSystem_datasource_username());
+        dataSource.setPassword(properties.getSystem_datasource_password());
         dataSource.setInitialSize(5);
         dataSource.setMinIdle(5);
         dataSource.setMaxActive(100);

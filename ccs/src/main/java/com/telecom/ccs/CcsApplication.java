@@ -28,10 +28,13 @@ public class CcsApplication {
 		SpringApplicationContextUtil.setApplicationContext(app);
 
 
-		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("shandong_voice_queue"));
-		ThreadExecutorUtil.executeTask(new InitElasticsearch("shandong","task"));
-		ThreadExecutorUtil.executeTask(new InitElasticsearch("hebei","task"));
-		ThreadExecutorUtil.executeTask(new InitElasticsearch("beijing","task"));
+		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("SD"));
+
+
+
+		ThreadExecutorUtil.executeTask(new InitElasticsearch("SD".toLowerCase(),"task"));
+		ThreadExecutorUtil.executeTask(new InitElasticsearch("HB".toLowerCase(),"task"));
+		ThreadExecutorUtil.executeTask(new InitElasticsearch("BJ".toLowerCase(),"task"));
 		ThreadExecutorUtil.executeTask(new CcsTaskDispatch());
 
 

@@ -11,29 +11,30 @@ system:
       password: root
       server: 192.168.5.177
       port: 21
-
+    datasource:
+      type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://192.168.14.215:3306/thinkit?&characterEncoding=UTF8
+      username: root
+      password: 123456
+      dbcp2:
+           min-idle: 5                                           # 数据库连接池的最小维持连接数
+           initial-size: 5                                       # 初始化连接数
+           max-total: 5                                          # 最大连接数
+           max-wait-millis: 200
     dispatch:
       shandong: true
-      hebei: false
-      beijing: false
+      hebei: true
+      beijing: true
+
+    voice_engine_url: 123456789
 
 mybatis:
   config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径
   type-aliases-package: com.telecom.ccs.model    # 所有Entity别名类所在包
   mapper-locations: classpath:mybatis/mapper/*.xml                       # mapper映射文件
 
-spring:
-   datasource:
-        type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.14.215:3306/thinkit
-        username: root
-        password: 123456
-        dbcp2:
-             min-idle: 5                                           # 数据库连接池的最小维持连接数
-             initial-size: 5                                       # 初始化连接数
-             max-total: 5                                          # 最大连接数
-             max-wait-millis: 200
+
 
 
 # Elasticsearch

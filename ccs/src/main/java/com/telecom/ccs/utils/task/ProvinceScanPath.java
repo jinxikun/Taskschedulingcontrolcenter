@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 @Data
@@ -14,11 +15,15 @@ public class ProvinceScanPath {
 
     private String province;
 
+    /**
+     * 得到文件遍历目录
+     */
     public  String getCurrentScanPath(String prefixPath) {
 
-
         //使用Date
-        Date date = new Date();
+        Date date = null;
+        date =  getBeforeByHourTime(4);
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String datetime = sdf.format(date);
 
@@ -33,4 +38,18 @@ public class ProvinceScanPath {
 
 
     }
+
+
+    /**
+     * 得到当前时间的前N小时
+     */
+    public Date getBeforeByHourTime(int ihour){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - ihour);
+        return calendar.getTime();
+
+    }
+
+
 }

@@ -25,46 +25,22 @@ public class CcsTaskDispatch  implements Runnable{
 
         //山东
         if(propertiesConfig.isSystem_dispatch_shandong()){
-          TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("shandong"));
-          //  TheadExecutorScheduleUtil.executeScheduleTask2(new OneProvinceTask("shandong"));
-/*          while (true) {
-
-              logger.info("cycle...");
-              try {
-                  future.get();
-              } catch (InterruptedException e) {
-                  logger.error("interruptedException");
-                  e.printStackTrace();
-              } catch (ExecutionException e) {
-                  logger.error(" shandong schedule task ExecutionException!");
-                  e.printStackTrace();
-                  future.cancel(true);
-                  logger.error(" shandong schedule task reboot!");
-                  future = TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("shandong"));
-              }
-
-          }*/
-
-        }
+          TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("SD"));
+          }
 
 
         //河北
         if(propertiesConfig.isSystem_dispatch_hebei()){
-            TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("hebei"));
+            TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("HB"));
         }
 
 
         //北京
         if(propertiesConfig.isSystem_dispatch_beijing()){
-            TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("beijing"));
+            TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("BJ"));
         }
 
 
-
-        //北京
-        if(false){
-            TheadExecutorScheduleUtil.executeScheduleTask(new OneProvinceTask("北京"));
-        }
 
 
 

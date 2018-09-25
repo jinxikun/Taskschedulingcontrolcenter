@@ -8,16 +8,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReceiveXml {
-    private  String  engineNo;
-    private  String  province;
-    private  String  xmlPath;
+    private  String  serialNumber;
+    private  String  sttFilePath;
+    private  String  provinceCode;
+    private  String  rtnCode;
+    private  String  rtnMsg;
 
     @Override
     public String toString() {
         return "ReceiveXml{" +
-                "engineNo='" + engineNo + '\'' +
-                ", province='" + province + '\'' +
-                ", xmlPath='" + xmlPath + '\'' +
+                "serialNumber='" + serialNumber + '\'' +
+                ", sttFilePath='" + sttFilePath + '\'' +
+                ", province='" + provinceCode + '\'' +
+                ", rtnCode='" + rtnCode + '\'' +
+                ", rtnMsg='" + rtnMsg + '\'' +
                 '}';
     }
 }

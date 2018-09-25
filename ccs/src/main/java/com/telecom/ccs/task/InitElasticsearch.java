@@ -32,11 +32,6 @@ public class InitElasticsearch  implements Runnable{
            logger.info("CCS:  "+"Elasticsearch index:"+index+" is existed, no need to create.");
        }
 
-  /*      try {
-            ElasticSearchOps.insertData(index,type,"0000001");
-            logger.info("CCS:  "+"insert date to Elasticsearch .");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+
     }
 }
