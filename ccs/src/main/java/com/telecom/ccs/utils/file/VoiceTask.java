@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VoiceTask {
     private String serialNumber;
+    private String provinceCode;
     private String wavFilePath;
     private String toFilePath;
 
@@ -16,6 +17,7 @@ public class VoiceTask {
     public String toString() {
         return "VoiceTask{" +
                 "serialNumber='" + serialNumber + '\'' +
+                ", provinceCode='" + provinceCode + '\'' +
                 ", wavFilePath='" + wavFilePath + '\'' +
                 ", toFilePath='" + toFilePath + '\'' +
                 '}';

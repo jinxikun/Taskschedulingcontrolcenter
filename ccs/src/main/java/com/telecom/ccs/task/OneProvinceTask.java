@@ -32,14 +32,11 @@ public class OneProvinceTask  implements  Runnable{
     public void run() {
 
         try {
-
-
             logger.info("task province:" + province + " is started ...");
 
             ProvinceScanPath provinceScanPath = new ProvinceScanPath(province);
-            String scanPath = provinceScanPath.getCurrentScanPath(propertiesConfig.getSystem_ftp_relativePath());
+            String scanPath = provinceScanPath.getCurrentScanPath(propertiesConfig.getSystem_ftp_relativePath(),propertiesConfig.getSystem_scan_period());
             logger.info("Warning: province scan dir: " + scanPath);
-
 
             ArrayList<TaskDto> list = new ScanVoicetask().run(propertiesConfig.getSystem_ftp_server(), propertiesConfig.getSystem_ftp_port(), propertiesConfig.getSystem_ftp_username(), propertiesConfig.getSystem_ftp_password(), scanPath);
             if (list == null) {
@@ -50,7 +47,6 @@ public class OneProvinceTask  implements  Runnable{
             for (TaskDto taskDto : list) {
 
                 VoiceInfo vi = tool(taskDto);
-
 
                 CCS ccs = new CCS();
                 ccs.setSerialNumber(taskDto.getRecordedInfo()[0]);
@@ -80,7 +76,7 @@ public class OneProvinceTask  implements  Runnable{
 
                 RedisOps.leftPush(province + "_voice_queue", JSON.toJSONString(taskDto));
 
-                logger.info("redis queue:" + province + " leftpush ,json: " + JSON.toJSONString(taskDto));
+                logger.info("redis queue:" + province + "_voice_queue leftpush ,json: " + JSON.toJSONString(taskDto));
 
             }
 

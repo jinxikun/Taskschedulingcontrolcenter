@@ -45,8 +45,6 @@ public class TestController {
 
     @RequestMapping(value = "/insertccs",method = RequestMethod.GET)
     public String   insert(){
-
-
        return "add success.";
 
     }

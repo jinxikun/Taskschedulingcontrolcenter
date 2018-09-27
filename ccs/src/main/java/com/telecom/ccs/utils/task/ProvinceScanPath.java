@@ -18,11 +18,11 @@ public class ProvinceScanPath {
     /**
      * 得到文件遍历目录
      */
-    public  String getCurrentScanPath(String prefixPath) {
+    public  String getCurrentScanPath(String prefixPath,int period) {
 
         //使用Date
         Date date = null;
-        date =  getBeforeByHourTime(4);
+        date =  getBeforeByHourTime(period);
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String datetime = sdf.format(date);

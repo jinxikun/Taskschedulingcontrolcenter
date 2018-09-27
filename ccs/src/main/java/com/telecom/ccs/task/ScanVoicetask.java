@@ -24,9 +24,9 @@ public class ScanVoicetask {
 
     Logger logger = LoggerFactory.getLogger(ScanVoicetask.class);
 
-    private StringBuffer onlyVoice = new StringBuffer("");  //记录异常： 只有语音文件
-    private StringBuffer onlyTxt = new StringBuffer("");  //记录异常： 只有随路信息文件
-    private StringBuffer exceptions = new StringBuffer("");  //记录异常： 语音文件异常
+    private StringBuffer onlyVoice = new StringBuffer("noTxt:");  //记录异常： 只有语音文件
+    private StringBuffer onlyTxt = new StringBuffer("noFile:");  //记录异常： 只有随路信息文件
+    private StringBuffer exceptions = new StringBuffer("sizeError:");  //记录异常： 语音文件异常
 
     private FTPClient ftp  = null;
 
@@ -90,18 +90,23 @@ public class ScanVoicetask {
         logger.info("onlyVoice:"+onlyVoice.toString());
 
 
+        File errorFile = new File(scanPath);
+        String exceptionDealFile=  errorFile.getParent()+File.separatorChar+"ERROR"+File.separatorChar+errorFile.getName()+".txt";
+
+        writeTxt2ftp(errorFile.getParent()+File.separatorChar+"ERROR"+File.separatorChar,errorFile.getName()+".txt",onlyTxt.toString()+"\r\n"+onlyVoice.toString()+"\r\n"+exceptions.toString());
+
         /*本批次如若有异常，则写异常文件到ftp*/
-        if(!"".equals(onlyVoice.toString())){
-            writeTxt2ftp("/home/zhangbo","onlyVoice.txt",onlyVoice.toString());
+ /*       if(!"".equals(onlyVoice.toString())){
+            writeTxt2ftp(errorFile.getParent()+File.separatorChar+"ERROR"+File.separatorChar,"onlyVoice.txt",onlyVoice.toString());
         }
 
         if(!"".equals(onlyTxt.toString())){
-            writeTxt2ftp("/home/zhangbo","onlyTxt.txt",onlyTxt.toString());
+            writeTxt2ftp(errorFile.getParent()+File.separatorChar+"ERROR"+File.separatorChar,"onlyTxt.txt",onlyTxt.toString());
         }
 
         if(!"".equals(exceptions.toString())){
-            writeTxt2ftp("/home/zhangbo","exceptions.txt",exceptions.toString());
-        }
+            writeTxt2ftp(errorFile.getParent()+File.separatorChar+"ERROR"+File.separatorChar,"exceptions.txt",exceptions.toString());
+        }*/
 
 
         close(ftp);
@@ -246,14 +251,14 @@ Transfer complete,但是ftp server 只要在接受到inputstream 执行close方�
                        alltask.add(new TaskDto(voice.getPath(),voice.getSize(),txt.getPath(),txt.getRecordedInfo()));
                    }else{
                        logger.error("校验不合法，文件大小不一致！ 描述: "+txt.getPath()+"|"+fileSize+"|"+voice.getPath()+"|"+voice.getSize());
-                       exceptions.append(txt.getPath()+"|"+fileSize+"|"+voice.getPath()+"|"+voice.getSize()+"\r\n");
+                       exceptions.append(serialNumber+"，");
                    }
                }
            }
 
            if(!flag_voicefileisExist){
                logger.error("校验不合法，只有随路信息文件！ 描述： "+ txt.getPath()+"|"+serialNumber);
-               onlyTxt.append(txt.getPath()+"|"+serialNumber+"\r\n");
+               onlyTxt.append(serialNumber+"，");
            }
 
         }
@@ -272,7 +277,9 @@ Transfer complete,但是ftp server 只要在接受到inputstream 执行close方�
 
            if(!isTxtExist){
                logger.error("校验不合法，只有录音文件！ 描述： "+ voiceDto.getPath());
-               onlyVoice.append(voiceDto.getPath()+"\r\n");
+               File voiceFile = new File(voiceDto.getPath());
+               String filename = voiceFile.getName();
+               onlyVoice.append(filename.substring(0,filename.lastIndexOf("."))+"，");
            }
 
         }
@@ -295,12 +302,17 @@ Transfer complete,但是ftp server 只要在接受到inputstream 执行close方�
         try {
 
             is = new ByteArrayInputStream(content.getBytes());
-            ftp.changeWorkingDirectory(path);
+            boolean changed = ftp.changeWorkingDirectory(path);
             ftp.setFileType(FTPClient.BINARY_FILE_TYPE);
-           boolean flag =  ftp.storeFile(new String(fileName.getBytes("utf-8"),
-                    "utf-8"), is);
 
-            if (flag) {
+            //目录切换成功时，才进行上传文件，否则不上传
+            if(changed){
+                 changed =  ftp.storeFile(new String(fileName.getBytes("utf-8"),
+                        "utf-8"), is);
+            }
+
+
+            if (changed) {
                 System.out.println("upload File succeed");
 
             } else {

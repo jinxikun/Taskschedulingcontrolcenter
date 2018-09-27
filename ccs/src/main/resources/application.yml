@@ -5,11 +5,12 @@ server:
     context-path: /ccs
 
 system:
+    scan_period: 3
     ftp:
-      relativePath: /task
-      username: ftpuser
+      relativePath: /home/ftpccs/task
+      username: ftpccs
       password: root
-      server: 192.168.5.177
+      server: 192.168.11.173
       port: 21
     datasource:
       type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
@@ -28,6 +29,7 @@ system:
       beijing: true
 
     voice_engine_url: 123456789
+    xml_engine_url: 1234567890
 
 mybatis:
   config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径

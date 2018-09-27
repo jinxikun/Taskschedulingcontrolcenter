@@ -49,5 +49,9 @@ public class PropertiesConfig {
     private String system_voice_engine_url;
 
 
+    @Value("${system.scan_period}")
+    private int system_scan_period;
+
+
 
 }

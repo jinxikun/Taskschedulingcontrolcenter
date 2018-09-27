@@ -1,39 +1,42 @@
 
 server:
-  port: 8081
+  port: 18081
   servlet:
     context-path: /ccs
 
 system:
+    scan_period: 3
     ftp:
       relativePath: /home/ftpuser/task
       username: ftpuser
       password: 12345678
       server: 172.16.153.149
       port: 21
-
+    datasource:
+      type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
+      driver-class-name: com.mysql.jdbc.Driver
+      url: jdbc:mysql://172.16.153.149:3306/dx_ngquality?&characterEncoding=UTF8
+      username: root
+      password: dxQuality@thinkit123
+      dbcp2:
+           min-idle: 5                                           # 数据库连接池的最小维持连接数
+           initial-size: 5                                       # 初始化连接数
+           max-total: 5                                          # 最大连接数
+           max-wait-millis: 200
     dispatch:
       shandong: true
-      hebei: false
-      beijing: false
+      hebei: true
+      beijing: true
+
+    voice_engine_url: 123456789
+    xml_engine_url: 1234567890
 
 mybatis:
   config-location: classpath:mybatis/mybatis.cfg.xml        # mybatis配置文件所在路径
-  type-aliases-package: com.telecom.ccs.entities    # 所有Entity别名类所在包
-  mapper-locations:
-  - classpath:mybatis/mapper/**/*.xml                       # mapper映射文件
+  type-aliases-package: com.telecom.ccs.model    # 所有Entity别名类所在包
+  mapper-locations: classpath:mybatis/mapper/*.xml                       # mapper映射文件
 
-spring:
-   datasource:
-        driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://172.16.153.149:3306/dx_ngquality
-        username: root
-        password: dxQuality@thinkit123
-        dbcp2:
-             min-idle: 5                                           # 数据库连接池的最小维持连接数
-             initial-size: 5                                       # 初始化连接数
-             max-total: 5                                          # 最大连接数
-             max-wait-millis: 200
+
 
 
 # Elasticsearch
@@ -51,7 +54,7 @@ spring:
       redis:
         host: 172.16.153.149
         port: 6379
-        database: 0
+        database: 5
         jedis:
           pool:
               max-active: 8

@@ -10,16 +10,24 @@ import java.util.Arrays;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TaskDto {
+    private String province;
     private String voicePath;
     private long voieceSize;
     private String txtPath;
     private String[] recordedInfo;
 
+    public TaskDto(String voicePath, long voieceSize, String txtPath, String[] recordedInfo) {
+        this.voicePath = voicePath;
+        this.voieceSize = voieceSize;
+        this.txtPath = txtPath;
+        this.recordedInfo = recordedInfo;
+    }
 
     @Override
     public String toString() {
         return "TaskDto{" +
-                "voicePath='" + voicePath + '\'' +
+                "province='" + province + '\'' +
+                ", voicePath='" + voicePath + '\'' +
                 ", voieceSize=" + voieceSize +
                 ", txtPath='" + txtPath + '\'' +
                 ", recordedInfo=" + Arrays.toString(recordedInfo) +

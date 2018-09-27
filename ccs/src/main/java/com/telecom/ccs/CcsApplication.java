@@ -28,7 +28,10 @@ public class CcsApplication {
 		SpringApplicationContextUtil.setApplicationContext(app);
 
 
-		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("SD"));
+		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("SD_voice_queue","SD"));
+		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("HB_voice_queue","HB"));
+		//ThreadExecutorUtil.executeTask(new Consumer_Voice_queue("BJ_voice_queue","BJ"));
+
 
 
 

@@ -21,11 +21,13 @@ public class Consumer_Voice_queue implements Runnable {
     private Logger logger = LoggerFactory.getLogger(Consumer_Voice_queue.class);
 
     private  String queueName;
+    private String provinceCode;
 
     private PropertiesConfig propertiesConfig = SpringApplicationContextUtil.getBean("propertiesConfig",PropertiesConfig.class);
 
-    public Consumer_Voice_queue(String queueName){
+    public Consumer_Voice_queue(String queueName,String provinceCode){
         this.queueName = queueName;
+        this.provinceCode = provinceCode;
     }
     @Override
     public void run() {
@@ -38,6 +40,7 @@ public class Consumer_Voice_queue implements Runnable {
                 // to do
 
                 VoiceTask voiceTask = new VoiceTask();
+                voiceTask.setProvinceCode(provinceCode);
                 voiceTask.setSerialNumber(dto.getRecordedInfo()[0]);
                 voiceTask.setWavFilePath(dto.getVoicePath());
 
@@ -55,6 +58,8 @@ public class Consumer_Voice_queue implements Runnable {
                 logger.info("语音任务发送： "+voiceTask.toString()+" http post 调用结果： "+responseInfo.toString());
 
             }else{
+
+                logger.warn("Redis queue:"+queueName+" has no task to pop.");
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException e) {
